@@ -1,0 +1,23 @@
+.btn-base { @apply inline-flex items-center justify-center font-medium rounded-btn transition-colors focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed text-xs2 h-8 px-3; }
+.btn-primary { @apply btn-base bg-ink-950 text-white hover:bg-ink-900 focus:ring-ink-900/40; }
+.btn-outline { @apply btn-base border border-black/10 text-ink-950 bg-white hover:bg-slate-50 focus:ring-ink-900/40; }
+.btn-danger { @apply btn-base bg-destructive text-white hover:bg-rose-600 focus:ring-rose-500/50; }
+.input { @apply w-full rounded-btn border border-black/10 px-3 py-2 text-xs2 focus:outline-none focus:ring-2 focus:ring-ink-900/40 focus:border-ink-900 bg-white placeholder:text-muted; }
+/* icon button utility (expanded instead of @apply for lint) */
+.icon-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	height: 2rem; /* h-8 default */
+	width: 2rem; /* w-8 default */
+	border-radius: 6.75px; /* rounded-btn */
+	border: 1px solid rgba(0,0,0,0.1); /* border-black/10 */
+	color: #0A0A0A; /* ink-900 fallback */
+	background: #fff;
+	transition: background-color .15s ease;
+}
+.icon-btn.h-7, .icon-btn.w-7 { height: 1.75rem; width: 1.75rem; }
+.icon-btn:hover { background: #f8fafc; }
+.icon-btn:focus { outline: 2px solid rgba(10,10,10,0.4); outline-offset: 2px; }
+.animate-fade-in { animation: fade-in 0.15s ease-out; }
+@keyframes fade-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
