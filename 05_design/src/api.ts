@@ -46,7 +46,10 @@ export async function addToBasket(item: BasketItemCreate): Promise<BasketItem> {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(item),
   });
-  if (!res.ok) throw new Error('Failed to add to basket');
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(`${res.status}: ${errorData.detail || 'Failed to add to basket'}`);
+  }
   return res.json();
 }
 
@@ -62,7 +65,10 @@ export async function updateBasketItem(id: number, update: BasketItemUpdate): Pr
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(update),
   });
-  if (!res.ok) throw new Error('Failed to update basket item');
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(`${res.status}: ${errorData.detail || 'Failed to update basket item'}`);
+  }
   return res.json();
 }
 

@@ -62,8 +62,20 @@ export function Basket({ refreshKey, onBasketUpdate }: Props) {
       await updateBasketItem(itemId, { quantity: newQuantity });
       await loadBasket();
       onBasketUpdate?.();
+      setError(null); // Clear any previous errors
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update item');
+      // Parse error message for better user experience
+      let errorMessage = 'Failed to update item';
+      if (err instanceof Error && err.message.includes('400')) {
+        if (err.message.includes('Only') && err.message.includes('available')) {
+          errorMessage = 'Insufficient stock available';
+        } else if (err.message.includes('Cannot set quantity')) {
+          errorMessage = 'Stock limit exceeded';
+        }
+      }
+      setError(errorMessage);
+      // Reload basket to reset to correct quantities
+      await loadBasket();
     }
   };
 

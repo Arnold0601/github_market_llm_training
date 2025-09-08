@@ -48,7 +48,19 @@ export default function App() {
     addToBasket({ product_id: product.id, quantity: 1 }).then(() => {
       setBasketRefreshKey(k => k + 1);
     }).catch(error => {
-      alert('Failed to add to basket: ' + error.message);
+      // Parse error message from backend
+      let errorMessage = 'Failed to add to basket';
+      if (error.message.includes('400')) {
+        // Extract the detailed error message from the backend
+        if (error.message.includes('Only') && error.message.includes('available')) {
+          errorMessage = 'Cannot add more items - insufficient stock available';
+        } else if (error.message.includes('out of stock')) {
+          errorMessage = 'This product is out of stock';
+        } else {
+          errorMessage = 'Cannot add item - stock limit reached';
+        }
+      }
+      alert(errorMessage);
     });
   }
 

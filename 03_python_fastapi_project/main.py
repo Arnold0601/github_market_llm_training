@@ -156,6 +156,10 @@ async def add_to_basket(basket_item: BasketItemCreate, db: AsyncSession = Depend
     if product is None:
         raise HTTPException(status_code=404, detail="Product not found")
     
+    # Check if product is in stock
+    if product.stock <= 0:
+        raise HTTPException(status_code=400, detail="Product is out of stock")
+    
     # Check if item already exists in basket
     existing_result = await db.execute(
         select(BasketItem).where(BasketItem.product_id == basket_item.product_id)
@@ -163,8 +167,16 @@ async def add_to_basket(basket_item: BasketItemCreate, db: AsyncSession = Depend
     existing_item = existing_result.scalar_one_or_none()
     
     if existing_item:
+        # Check if adding quantity would exceed stock
+        new_quantity = existing_item.quantity + basket_item.quantity
+        if new_quantity > product.stock:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Cannot add {basket_item.quantity} items. Only {product.stock - existing_item.quantity} more items available."
+            )
+        
         # Update quantity
-        existing_item.quantity += basket_item.quantity
+        existing_item.quantity = new_quantity
         await db.commit()
         await db.refresh(existing_item)
         
@@ -174,6 +186,13 @@ async def add_to_basket(basket_item: BasketItemCreate, db: AsyncSession = Depend
         )
         return result.scalar_one()
     else:
+        # Check if requested quantity exceeds stock
+        if basket_item.quantity > product.stock:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Cannot add {basket_item.quantity} items. Only {product.stock} items available."
+            )
+        
         # Create new basket item
         db_basket_item = BasketItem(
             product_id=basket_item.product_id,
@@ -210,6 +229,20 @@ async def update_basket_item(
     
     if basket_item is None:
         raise HTTPException(status_code=404, detail="Basket item not found")
+    
+    # Get the associated product to check stock
+    product_result = await db.execute(select(Product).where(Product.id == basket_item.product_id))
+    product = product_result.scalar_one_or_none()
+    
+    if product is None:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    # Validate that the new quantity doesn't exceed stock
+    if basket_update.quantity > product.stock:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Cannot set quantity to {basket_update.quantity}. Only {product.stock} items available."
+        )
     
     basket_item.quantity = basket_update.quantity
     await db.commit()
