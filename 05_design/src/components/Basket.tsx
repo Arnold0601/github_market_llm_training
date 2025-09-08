@@ -28,9 +28,10 @@ const TrashIcon = () => (
 interface Props {
   refreshKey?: number;
   onBasketUpdate?: () => void;
+  onShowToast?: (message: string, type?: 'success' | 'error' | 'warning' | 'info') => void;
 }
 
-export function Basket({ refreshKey, onBasketUpdate }: Props) {
+export function Basket({ refreshKey, onBasketUpdate, onShowToast }: Props) {
   const [basketItems, setBasketItems] = useState<BasketItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -73,7 +74,7 @@ export function Basket({ refreshKey, onBasketUpdate }: Props) {
           errorMessage = 'Stock limit exceeded';
         }
       }
-      setError(errorMessage);
+      onShowToast?.(errorMessage, 'error');
       // Reload basket to reset to correct quantities
       await loadBasket();
     }
@@ -84,8 +85,9 @@ export function Basket({ refreshKey, onBasketUpdate }: Props) {
       await removeFromBasket(itemId);
       await loadBasket();
       onBasketUpdate?.();
+      onShowToast?.('Item removed from basket', 'success');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to remove item');
+      onShowToast?.(err instanceof Error ? err.message : 'Failed to remove item', 'error');
     }
   };
 
@@ -94,8 +96,9 @@ export function Basket({ refreshKey, onBasketUpdate }: Props) {
       await clearBasket();
       await loadBasket();
       onBasketUpdate?.();
+      onShowToast?.('Basket cleared', 'success');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to clear basket');
+      onShowToast?.(err instanceof Error ? err.message : 'Failed to clear basket', 'error');
     }
   };
 
