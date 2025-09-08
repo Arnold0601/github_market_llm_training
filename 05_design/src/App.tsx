@@ -3,7 +3,8 @@ import { Product, ProductCreate } from './types';
 import { ProductCards } from './components/ProductCards';
 import { ProductForm } from './components/ProductForm';
 import { Modal } from './components/Modal';
-import { addProduct, updateProduct, deleteProduct } from './api';
+import { Basket } from './components/Basket';
+import { addProduct, updateProduct, deleteProduct, addToBasket } from './api';
 
 export default function App() {
   const [selected, setSelected] = useState<Product | null>(null);
@@ -12,6 +13,7 @@ export default function App() {
   const [showDelete, setShowDelete] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [showDetails, setShowDetails] = useState(false);
+  const [basketRefreshKey, setBasketRefreshKey] = useState(0);
 
   function handleAdded(p: ProductCreate) {
     addProduct(p).then(() => {
@@ -34,6 +36,19 @@ export default function App() {
       setShowDelete(false);
       setSelected(null);
       setRefreshKey(k => k + 1);
+    });
+  }
+
+  function handleAddToBasket(product: Product) {
+    if (product.stock <= 0) {
+      alert('This product is out of stock');
+      return;
+    }
+    
+    addToBasket({ product_id: product.id, quantity: 1 }).then(() => {
+      setBasketRefreshKey(k => k + 1);
+    }).catch(error => {
+      alert('Failed to add to basket: ' + error.message);
     });
   }
 
@@ -60,6 +75,7 @@ export default function App() {
           onView={p => { setSelected(p); setShowDetails(true); }}
           onEdit={p => { setSelected(p); setShowEdit(true); }}
           onDelete={p => { setSelected(p); setShowDelete(true); }}
+          onAddToBasket={handleAddToBasket}
         />
   {/* Details section removed in favor of modal */}
       <Modal open={showDetails && !!selected} onClose={() => setShowDetails(false)} ariaLabel="Product details dialog">
@@ -123,6 +139,9 @@ export default function App() {
           </div>
         </div>
       </Modal>
+
+      {/* Basket component in bottom left corner */}
+      <Basket refreshKey={basketRefreshKey} />
 
     </div>
   );
