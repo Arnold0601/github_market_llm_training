@@ -24,15 +24,23 @@ const TrashIcon = () => (
   </svg>
 );
 
+const PlusIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M12 5v14" />
+    <path d="M5 12h14" />
+  </svg>
+);
+
 interface Props {
   onSelect: (p: Product) => void;
   onView: (p: Product) => void;
   onEdit: (p: Product) => void;
   onDelete: (p: Product) => void;
+  onAddToBasket: (p: Product) => void;
   refreshKey?: number;
 }
 
-export function ProductCards({ onSelect, onView, onEdit, onDelete, refreshKey }: Props) {
+export function ProductCards({ onSelect, onView, onEdit, onDelete, onAddToBasket, refreshKey }: Props) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -56,7 +64,17 @@ export function ProductCards({ onSelect, onView, onEdit, onDelete, refreshKey }:
           onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(p); } }}
         >
           <div className="flex-1 flex flex-col">
-            <h4 className="text-sm2 font-medium leading-tight text-ink-950 line-clamp-2 mb-3">{p.name}</h4>
+            <div className="flex items-start justify-between mb-3">
+              <h4 className="text-sm2 font-medium leading-tight text-ink-950 line-clamp-2 flex-1 pr-2">{p.name}</h4>
+              <button 
+                type="button" 
+                aria-label="Add to basket" 
+                onClick={e => { e.stopPropagation(); onAddToBasket(p); }} 
+                className="btn-primary h-6 w-6 p-0 justify-center flex-shrink-0"
+              >
+                <PlusIcon />
+              </button>
+            </div>
             <p className="text-xs2 leading-relaxed text-muted mb-6 line-clamp-4">{p.description || 'No description provided.'}</p>
             <div className="mt-auto flex items-center justify-between text-xs2 text-muted">
               <span className="font-semibold text-ink-950 text-sm2">${p.price}</span>

@@ -4,11 +4,12 @@ from typing import List
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from config import settings
-from database import Product, create_tables, get_db
+from database import Product, BasketItem, create_tables, get_db
 
 
 class ProductDTO(BaseModel):
@@ -34,6 +35,25 @@ class ProductUpdate(BaseModel):
     price: float | None = None
     description: str | None = None
     stock: int | None = None
+
+
+class BasketItemDTO(BaseModel):
+    id: int
+    product_id: int
+    quantity: int
+    product: ProductDTO
+
+    class Config:
+        from_attributes = True
+
+
+class BasketItemCreate(BaseModel):
+    product_id: int
+    quantity: int = 1
+
+
+class BasketItemUpdate(BaseModel):
+    quantity: int
 
 
 @asynccontextmanager
@@ -124,6 +144,133 @@ async def get_product_by_id(product_id: int, db: AsyncSession = Depends(get_db))
     if product is None:
         raise HTTPException(status_code=404, detail="Product not found")
     return product
+
+
+# Basket endpoints
+@app.post("/basket/", response_model=BasketItemDTO)
+async def add_to_basket(basket_item: BasketItemCreate, db: AsyncSession = Depends(get_db)):
+    # Check if product exists
+    product_result = await db.execute(select(Product).where(Product.id == basket_item.product_id))
+    product = product_result.scalar_one_or_none()
+    
+    if product is None:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    # Check if product is in stock
+    if product.stock <= 0:
+        raise HTTPException(status_code=400, detail="Product is out of stock")
+    
+    # Check if item already exists in basket
+    existing_result = await db.execute(
+        select(BasketItem).where(BasketItem.product_id == basket_item.product_id)
+    )
+    existing_item = existing_result.scalar_one_or_none()
+    
+    if existing_item:
+        # Check if adding quantity would exceed stock
+        new_quantity = existing_item.quantity + basket_item.quantity
+        if new_quantity > product.stock:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Cannot add {basket_item.quantity} items. Only {product.stock - existing_item.quantity} more items available."
+            )
+        
+        # Update quantity
+        existing_item.quantity = new_quantity
+        await db.commit()
+        await db.refresh(existing_item)
+        
+        # Load the product relationship
+        result = await db.execute(
+            select(BasketItem).options(selectinload(BasketItem.product)).where(BasketItem.id == existing_item.id)
+        )
+        return result.scalar_one()
+    else:
+        # Check if requested quantity exceeds stock
+        if basket_item.quantity > product.stock:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Cannot add {basket_item.quantity} items. Only {product.stock} items available."
+            )
+        
+        # Create new basket item
+        db_basket_item = BasketItem(
+            product_id=basket_item.product_id,
+            quantity=basket_item.quantity
+        )
+        db.add(db_basket_item)
+        await db.commit()
+        await db.refresh(db_basket_item)
+        
+        # Load the product relationship
+        result = await db.execute(
+            select(BasketItem).options(selectinload(BasketItem.product)).where(BasketItem.id == db_basket_item.id)
+        )
+        return result.scalar_one()
+
+
+@app.get("/basket/", response_model=List[BasketItemDTO])
+async def get_basket(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(
+        select(BasketItem).options(selectinload(BasketItem.product))
+    )
+    basket_items = result.scalars().all()
+    return basket_items
+
+
+@app.put("/basket/{item_id}", response_model=BasketItemDTO)
+async def update_basket_item(
+    item_id: int,
+    basket_update: BasketItemUpdate,
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(select(BasketItem).where(BasketItem.id == item_id))
+    basket_item = result.scalar_one_or_none()
+    
+    if basket_item is None:
+        raise HTTPException(status_code=404, detail="Basket item not found")
+    
+    # Get the associated product to check stock
+    product_result = await db.execute(select(Product).where(Product.id == basket_item.product_id))
+    product = product_result.scalar_one_or_none()
+    
+    if product is None:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    # Validate that the new quantity doesn't exceed stock
+    if basket_update.quantity > product.stock:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Cannot set quantity to {basket_update.quantity}. Only {product.stock} items available."
+        )
+    
+    basket_item.quantity = basket_update.quantity
+    await db.commit()
+    await db.refresh(basket_item)
+    
+    # Load the product relationship
+    result = await db.execute(
+        select(BasketItem).options(selectinload(BasketItem.product)).where(BasketItem.id == basket_item.id)
+    )
+    return result.scalar_one()
+
+
+@app.delete("/basket/{item_id}", status_code=204)
+async def remove_from_basket(item_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(BasketItem).where(BasketItem.id == item_id))
+    basket_item = result.scalar_one_or_none()
+    
+    if basket_item is None:
+        raise HTTPException(status_code=404, detail="Basket item not found")
+    
+    await db.delete(basket_item)
+    await db.commit()
+
+
+@app.delete("/basket/", status_code=204)
+async def clear_basket(db: AsyncSession = Depends(get_db)):
+    await db.execute(delete(BasketItem))
+    await db.commit()
 
 
 if __name__ == "__main__":

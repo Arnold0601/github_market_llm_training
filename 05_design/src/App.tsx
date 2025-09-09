@@ -3,15 +3,19 @@ import { Product, ProductCreate } from './types';
 import { ProductCards } from './components/ProductCards';
 import { ProductForm } from './components/ProductForm';
 import { Modal } from './components/Modal';
-import { addProduct, updateProduct, deleteProduct } from './api';
+import { Basket } from './components/Basket';
+import { ToastProvider, useToast } from './components/ToastProvider';
+import { addProduct, updateProduct, deleteProduct, addToBasket } from './api';
 
-export default function App() {
+function AppContent() {
+  const { showToast } = useToast();
   const [selected, setSelected] = useState<Product | null>(null);
   const [showAdd, setShowAdd] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [showDetails, setShowDetails] = useState(false);
+  const [basketRefreshKey, setBasketRefreshKey] = useState(0);
 
   function handleAdded(p: ProductCreate) {
     addProduct(p).then(() => {
@@ -34,6 +38,32 @@ export default function App() {
       setShowDelete(false);
       setSelected(null);
       setRefreshKey(k => k + 1);
+    });
+  }
+
+  function handleAddToBasket(product: Product) {
+    if (product.stock <= 0) {
+      showToast('This product is out of stock', 'error');
+      return;
+    }
+    
+    addToBasket({ product_id: product.id, quantity: 1 }).then(() => {
+      setBasketRefreshKey(k => k + 1);
+      showToast('Item added to basket', 'success');
+    }).catch(error => {
+      // Parse error message from backend
+      let errorMessage = 'Failed to add to basket';
+      if (error.message.includes('400')) {
+        // Extract the detailed error message from the backend
+        if (error.message.includes('Only') && error.message.includes('available')) {
+          errorMessage = 'Cannot add more items - insufficient stock available';
+        } else if (error.message.includes('out of stock')) {
+          errorMessage = 'This product is out of stock';
+        } else {
+          errorMessage = 'Cannot add item - stock limit reached';
+        }
+      }
+      showToast(errorMessage, 'error');
     });
   }
 
@@ -60,6 +90,7 @@ export default function App() {
           onView={p => { setSelected(p); setShowDetails(true); }}
           onEdit={p => { setSelected(p); setShowEdit(true); }}
           onDelete={p => { setSelected(p); setShowDelete(true); }}
+          onAddToBasket={handleAddToBasket}
         />
   {/* Details section removed in favor of modal */}
       <Modal open={showDetails && !!selected} onClose={() => setShowDetails(false)} ariaLabel="Product details dialog">
@@ -124,6 +155,21 @@ export default function App() {
         </div>
       </Modal>
 
+      {/* Basket component in bottom left corner */}
+      <Basket 
+        refreshKey={basketRefreshKey} 
+        onBasketUpdate={() => setRefreshKey(k => k + 1)}
+        onShowToast={showToast}
+      />
+
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <ToastProvider>
+      <AppContent />
+    </ToastProvider>
   );
 }

@@ -1,93 +1,207 @@
-# szaszarnold_llm_training
+# GitHub Market LLM Training - Product Management Application
 
+A full-stack product management application with shopping cart functionality, built as a training project for LLM-assisted development. This project demonstrates modern web development practices with FastAPI backend and React frontend.
 
+## 🚀 Features
 
-## Getting started
+### Backend (FastAPI)
+- **Product Management**: Full CRUD operations for products
+- **Shopping Cart/Basket**: Complete basket functionality with item management
+- **Database**: Async SQLAlchemy with SQLite, auto-created tables
+- **API Documentation**: Automatic OpenAPI/Swagger documentation
+- **CORS**: Configured for frontend integration
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+### Frontend (React + Vite + Tailwind)
+- **Modern UI**: Figma-driven design with custom Tailwind tokens
+- **Product Catalog**: Card-based product display with search and filters
+- **Shopping Cart**: Real-time basket management with quantity controls
+- **Toast Notifications**: User feedback system with animations
+- **Responsive Design**: Mobile-friendly interface
+- **TypeScript**: Full type safety throughout the application
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+## 🏗️ Project Structure
 
 ```
-cd existing_repo
-git remote add origin https://git.edu.codespring.ro/llm-trainings-repos/szaszarnold_llm_training.git
-git branch -M main
-git push -uf origin main
+├── 03_python_fastapi_project/    # Backend API
+│   ├── main.py                   # FastAPI application
+│   ├── database.py              # Database configuration
+│   ├── config.py                # Environment settings
+│   └── pyproject.toml           # Python dependencies
+│
+├── 05_design/                   # Frontend application
+│   ├── src/
+│   │   ├── components/          # React components
+│   │   ├── api.ts              # API client functions
+│   │   ├── types.ts            # TypeScript interfaces
+│   │   └── App.tsx             # Main application
+│   ├── tailwind.config.js      # Tailwind configuration
+│   └── package.json            # Node.js dependencies
+│
+└── issues/                     # Feature documentation
+    ├── issue-1.md              # Figma design requirements
+    └── issue-2.md              # Additional features
 ```
 
-## Integrate with your tools
+## 🛠️ Installation & Setup
 
-- [ ] [Set up project integrations](https://git.edu.codespring.ro/llm-trainings-repos/szaszarnold_llm_training/-/settings/integrations)
+### Prerequisites
+- Python 3.10+ with `uv` package manager
+- Node.js 18+ with npm
+- Git
 
-## Collaborate with your team
+### Backend Setup
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+1. Navigate to the backend directory:
+```bash
+cd 03_python_fastapi_project
+```
 
-## Test and Deploy
+2. Install dependencies using uv:
+```bash
+uv sync
+```
 
-Use the built-in continuous integration in GitLab.
+3. Start the development server:
+```bash
+uv run uvicorn main:app --reload
+```
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+The API will be available at `http://localhost:8000`
 
-***
+### Frontend Setup
 
-# Editing this README
+1. Navigate to the frontend directory:
+```bash
+cd 05_design
+```
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+2. Install dependencies:
+```bash
+npm install
+```
 
-## Suggestions for a good README
+3. Start the development server:
+```bash
+npm run dev
+```
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+The application will be available at `http://localhost:5173` or `http://localhost:5174`
 
-## Name
-Choose a self-explaining name for your project.
+## 📚 API Documentation
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+### Products API
+- `GET /products/` - List all products
+- `POST /products/` - Create a new product
+- `GET /products/{id}` - Get product by ID
+- `PUT /products/{id}` - Update product
+- `DELETE /products/{id}` - Delete product
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+### Basket API
+- `GET /basket/` - Get basket contents
+- `POST /basket/` - Add item to basket
+- `PUT /basket/{item_id}` - Update item quantity
+- `DELETE /basket/{item_id}` - Remove item from basket
+- `DELETE /basket/` - Clear entire basket
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+Visit `http://localhost:8000/docs` for interactive API documentation.
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+## 🎨 UI Components
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+### Key Features
+- **Product Cards**: Display products with add-to-basket functionality
+- **Basket Widget**: Fixed-position cart in bottom-left corner
+- **Modal Dialogs**: Add/Edit/Delete product forms with Figma-spec styling
+- **Toast Notifications**: Real-time feedback with fade-in animations
+- **Form Validation**: Client-side validation with error handling
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+### Design System
+- **Colors**: Custom palette with muted, destructive, and primary scales
+- **Typography**: Custom font sizes (xs2, sm2, base2)
+- **Border Radius**: Consistent radii (btn: 6.75px, card: 12.75px, cardsm: 8.75px)
+- **Animations**: Smooth fade-in effects for toasts and interactions
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+## 🔧 Technical Implementation
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+### Database Models
+```python
+# Product model
+class Product:
+    id: int
+    name: str
+    price: float
+    description: str
+    stock: int
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+# Basket item model
+class BasketItem:
+    id: int
+    product_id: int (Foreign Key)
+    quantity: int
+    product: Product (Relationship)
+```
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+### State Management
+- React hooks for local state management
+- Toast provider context for notifications
+- Real-time updates between basket and product components
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+### Error Handling
+- Structured error responses with specific error codes
+- Client-side validation and feedback
+- Graceful degradation for network issues
 
-## License
-For open source projects, say how it is licensed.
+## 🚦 Development Status
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+### ✅ Completed Features
+- [x] Product CRUD operations
+- [x] Shopping cart/basket functionality
+- [x] Toast notification system
+- [x] Figma-spec UI implementation
+- [x] Real-time basket updates
+- [x] Stock validation
+- [x] Error handling improvements
+- [x] Code quality optimizations
+
+### 🔄 Recent Improvements
+- Fixed duplicate toast implementations
+- Improved ID generation using crypto.randomUUID()
+- Added proper Tailwind animations
+- Enhanced error handling with structured responses
+- Removed redundant code comments
+
+### 🎯 Current Branch
+`feature/1-basket-feature` - Complete basket/cart functionality implementation
+
+## 🧪 Testing
+
+### Backend
+```bash
+cd 03_python_fastapi_project
+uv run pytest
+```
+
+### Frontend
+```bash
+cd 05_design
+npm run build  # Verify build passes
+```
+
+## 🤝 Contributing
+
+This project follows modern development practices:
+
+1. **Code Quality**: TypeScript for type safety, ESLint for linting
+2. **Design Consistency**: Figma-driven UI with Tailwind design tokens
+3. **API Design**: RESTful endpoints with proper HTTP status codes
+4. **Error Handling**: Structured error responses and user feedback
+
+## 📄 License
+
+This project is for educational purposes as part of LLM training exercises.
+
+## 🙏 Acknowledgments
+
+- Built with modern tooling: FastAPI, React, Vite, Tailwind CSS
+- Design specifications from Figma
+- LLM-assisted development practices
+- Async/await patterns throughout the stack

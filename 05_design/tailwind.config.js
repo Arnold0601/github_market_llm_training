@@ -36,6 +36,15 @@ export default {
         xs2: '11.3px',
         sm2: '12.8px',
         base2: '13.2px'
+      },
+      animation: {
+        'fade-in': 'fadeIn 0.3s ease-in-out'
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0', transform: 'translateY(-10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' }
+        }
       }
     },
   },
