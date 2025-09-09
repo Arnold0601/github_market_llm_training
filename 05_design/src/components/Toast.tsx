@@ -82,7 +82,7 @@ export function Toast({ message, type = 'info', duration = 4000, onClose }: Toas
   };
 
   return (
-    <div className={`fixed top-4 right-4 z-50 animate-fade-in min-w-80 max-w-96 p-4 rounded-card border shadow-lg ${getToastStyles()}`}>
+    <div className={`animate-fade-in min-w-80 max-w-96 p-4 rounded-card border shadow-lg ${getToastStyles()}`}>
       <div className="flex items-start gap-3">
         <div className={`flex-shrink-0 ${getIconColor()}`}>
           {getIcon()}

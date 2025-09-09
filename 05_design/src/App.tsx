@@ -4,17 +4,11 @@ import { ProductCards } from './components/ProductCards';
 import { ProductForm } from './components/ProductForm';
 import { Modal } from './components/Modal';
 import { Basket } from './components/Basket';
+import { ToastProvider, useToast } from './components/ToastProvider';
 import { addProduct, updateProduct, deleteProduct, addToBasket } from './api';
 
-type ToastType = 'success' | 'error' | 'warning' | 'info';
-
-type Toast = {
-  id: number;
-  message: string;
-  type: ToastType;
-};
-
-export default function App() {
+function AppContent() {
+  const { showToast } = useToast();
   const [selected, setSelected] = useState<Product | null>(null);
   const [showAdd, setShowAdd] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
@@ -22,20 +16,6 @@ export default function App() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [showDetails, setShowDetails] = useState(false);
   const [basketRefreshKey, setBasketRefreshKey] = useState(0);
-  const [toasts, setToasts] = useState<Toast[]>([]);
-
-  const showToast = (message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') => {
-    const id = Date.now();
-    const newToast: Toast = { id, message, type };
-    setToasts(prev => [...prev, newToast]);
-    setTimeout(() => {
-      setToasts(prev => prev.filter(toast => toast.id !== id));
-    }, 4000);
-  };
-
-  const removeToast = (id: number) => {
-    setToasts(prev => prev.filter(toast => toast.id !== id));
-  };
 
   function handleAdded(p: ProductCreate) {
     addProduct(p).then(() => {
@@ -182,43 +162,14 @@ export default function App() {
         onShowToast={showToast}
       />
 
-      {/* Toast notifications */}
-      <div className="fixed top-4 right-4 z-50 space-y-2">
-        {toasts.map((toast) => (
-          <div
-            key={toast.id}
-            className={`animate-fade-in min-w-80 max-w-96 p-4 rounded-card border shadow-lg ${
-              toast.type === 'success' ? 'bg-green-50 border-green-200 text-green-800' :
-              toast.type === 'error' ? 'bg-red-50 border-red-200 text-red-800' :
-              toast.type === 'warning' ? 'bg-yellow-50 border-yellow-200 text-yellow-800' :
-              'bg-blue-50 border-blue-200 text-blue-800'
-            }`}
-          >
-            <div className="flex items-start gap-3">
-              <div className={`flex-shrink-0 ${
-                toast.type === 'success' ? 'text-green-500' :
-                toast.type === 'error' ? 'text-red-500' :
-                toast.type === 'warning' ? 'text-yellow-500' :
-                'text-blue-500'
-              }`}>
-                {toast.type === 'success' ? '✓' : 
-                 toast.type === 'error' ? '✕' : 
-                 toast.type === 'warning' ? '⚠' : 'ℹ'}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm2 leading-relaxed pr-2">{toast.message}</p>
-              </div>
-              <button
-                onClick={() => removeToast(toast.id)}
-                className="flex-shrink-0 text-current hover:opacity-70 transition-opacity"
-              >
-                ✕
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <ToastProvider>
+      <AppContent />
+    </ToastProvider>
   );
 }
